@@ -32,30 +32,39 @@ typedef struct EBR{
 
 void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] ){
 
-/*    char destino[500];
+    char destino[500];
 
     strcpy(destino,path);
     strcat(destino,nombre);
 
-    printf("%s",destino);
+//    printf("%s",destino);
 
     FILE *archivo_binario;
     archivo_binario = fopen(destino,"wb+");
     if(archivo_binario == NULL){
-
-        fseek(archivo, sizeof_record + r.contador*sizeof_estudiante, SEEK_SET);
-        fwrite(&e, sizeof_estudiante, 1, archivo);
         printf("ERRO AL CARGAR EL ARCHIVO\n");
 
     }else{
+        long tamano = 1024*size;
+        int s = sizeof("0000");
+        printf("%d\n",s);
+        long num = tamano / sizeof("0000");
+        printf("%ld\n",num);
+
+        for(int i = 0; i <= num ; i++){
+            fseek(archivo_binario,i ,SEEK_END);
+            printf("%d\n",i);
+            fputs("0000",archivo_binario);
+        }
+        fclose(archivo_binario);
         printf("DISCO CREADO!\n");
     }
-*/
+
 }
 
 int main()
 {
     printf("Proyecto Archivos\n");
-    CreacionDisco(12,"/home/jerduar/","M","prueba.dsk");
+    CreacionDisco(1,"/home/jerduar/","K","prueba.dsk");
     return 0;
 }
