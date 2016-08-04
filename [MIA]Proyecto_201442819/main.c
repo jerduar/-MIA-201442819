@@ -37,8 +37,7 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
     strcpy(destino,path);
     strcat(destino,nombre);
 
-//    printf("%s",destino);
-
+    //printf("%s",destino);
     FILE *archivo_binario;
     archivo_binario = fopen(destino,"wb+");
     if(archivo_binario == NULL){
