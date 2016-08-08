@@ -39,33 +39,57 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
     strcat(destino,nombre);
 
     FILE *archivo_binario;
+
+    int mult = 1024;
+
+    if(strcasecmp(unidad,"M")==0){
+        printf("%s Estoy en M\n",unidad);
+        mult = mult * 1024;
+    }else if(strcasecmp(unidad,"B")==0){
+        printf("%s Esto en B\n",unidad);
+        mult = 1;
+    }
+
+    long tamano = mult*size;
+
+    MBR nuevo_mvr;
+    nuevo_mvr.mbr_disk_signature = tamano;
+    nuevo_mvr.mbr_fecha_creacion = time(0);
+
+
     archivo_binario = fopen(destino,"wb+");
-    char c[2] = "\0" ;
     if(archivo_binario == NULL){
         printf("ERRO AL CARGAR EL ARCHIVO\n");
 
     }else{
-        long tamano = 1024*size;
-        int s = sizeof(c);
-        printf("%d\n",s);
-        long num = tamano / sizeof(c);
-        printf("%ld\n",num);
-
-        for(int i = 0; i < num ; i++){
-            fseek(archivo_binario,i ,SEEK_END);
-            printf("%d\n",i);
-            fwrite(c , 1 , sizeof(c) , archivo_binario );
+        long num = tamano / sizeof("\0");
+        for(int i = 0; i <= num ; i++){
+            fseek(archivo_binario,i*sizeof("\0") ,SEEK_SET);
+            fwrite("\0" , 1 , sizeof("\0") , archivo_binario );
         }
+
+        fseek(archivo_binario,0 ,SEEK_SET);
+        fwrite(&nuevo_mvr,1,sizeof(nuevo_mvr),archivo_binario);
+
+
         fclose(archivo_binario);
         printf("DISCO CREADO!\n");
     }
 
 }
 
+void rmkdisk(char path[256]){
+    if(remove(path) == 0){
+        printf("Archivo con direccion %s eliminado",path);
+    }else{
+        printf("Archivo %s no encontrado",path);
+    }
+}
+
 void Lector(){
 
     int activo = 1;
-    char scanner[256];
+    char *scanner;
     char *result;
 
     while(activo==1){
@@ -73,9 +97,9 @@ void Lector(){
         result = strtok(scanner," ");
 
         while(result != NULL){
-        printf("%s\n",result);
+        //printf("%s\n",result);
             if(strcasecmp(result,"MKDISK") == 0){
-                printf("%s\n",result);
+                //printf("%s\n", result);
             }
             result = strtok(NULL," ");
         }
@@ -84,13 +108,12 @@ void Lector(){
 
     }
 
-
 }
 
 int main()
 {
     printf("Proyecto Archivos\n");
-    CreacionDisco(1,"/home/jerduar/","K","prueba.dsk");
-    //Lector();
+    CreacionDisco(1,"/home/jerduar/","B","prueba.dsk");
+    //rmkdisk("/home/jerduar/prueba.dsk");
     return 0;
 }
