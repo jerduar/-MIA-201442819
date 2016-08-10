@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct partition{
     char part_status;// indica si la particion esta activa o no
@@ -31,6 +34,8 @@ typedef struct EBR{
     char part_name[16];//nombre de la particion
 }EBR;
 
+#define sizeof_MBR sizeof(MBR)
+
 void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] ){
 
     char destino[500];
@@ -53,7 +58,9 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
     long tamano = mult*size;
 
     MBR nuevo_mvr;
+    nuevo_mvr.mbr_tamano = tamano;
     nuevo_mvr.mbr_disk_signature = tamano;
+    printf("El tamaño es: %d\n", tamano);
     nuevo_mvr.mbr_fecha_creacion = time(0);
 
 
@@ -69,7 +76,7 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
         }
 
         fseek(archivo_binario,0 ,SEEK_SET);
-        fwrite(&nuevo_mvr,1,sizeof(nuevo_mvr),archivo_binario);
+        fwrite(&nuevo_mvr,1,sizeof(MBR),archivo_binario);
 
 
         fclose(archivo_binario);
@@ -113,7 +120,24 @@ void Lector(){
 int main()
 {
     printf("Proyecto Archivos\n");
-    CreacionDisco(1,"/home/jerduar/","B","prueba.dsk");
-    //rmkdisk("/home/jerduar/prueba.dsk");
+    CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
+
+    FILE *archivo;
+    archivo = fopen("/home/jerduar/prueba.dsk","rb+");
+
+    MBR mbr;
+    fseek(archivo,0,SEEK_SET);
+    fread(&mbr,sizeof_MBR,1,archivo);
+    fclose(archivo);
+
+    printf("El tamaño del disco es : %ld\n",mbr.mbr_tamano);
+    //rmkdisk("/home/jerduar/prueba.dsk");*/
+/*
+    struct stat st = {0};
+
+if (stat("/home/jerduar/prueba", &st) == -1) {
+    mkdir("/home/jerduar/dfasdf/Archivos", 0700);
+}*/
     return 0;
+
 }
