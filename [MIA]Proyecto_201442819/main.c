@@ -60,7 +60,7 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
     MBR nuevo_mvr;
     nuevo_mvr.mbr_tamano = tamano;
     nuevo_mvr.mbr_disk_signature = rand() % 11;
-    printf("El tamaño es: %d\n", tamano);
+    printf("El tamaño es: %ld\n", tamano);
     nuevo_mvr.mbr_fecha_creacion = time(0);
 
 
@@ -115,7 +115,7 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
             mult = 1;
         }*/
 
-        long tamano = mult; //* size;
+        long tamano = mult; //* size;o
         Partition p;
 
 
@@ -148,17 +148,24 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
 //METODO PARA LEER LA CONSOLA
 void Lector(){
 
-    char token[256];
-    char scanner[256] = "";
-    fgets(scanner,256*sizeof(char),stdin);
+    char *token=NULL;
+    char scanner[256];
+    char delimitador[]=" ";
+    fgets(scanner,256,stdin);
 
-    strcpy(token,strtok(scanner," "));
+    token = strtok(scanner,delimitador);
     printf("%s",token);
 
-    if(strcasecmp(token,"HOLA") == 0)
-    {
-        printf("jhkhkjh\n");
+    while(token != NULL){
+        if(strcasecmp("hola",token) == 0)
+        {
+        printf("es igual");
+        }
+        token = strtok(NULL,delimitador);
     }
+
+
+    //printf("es igual");
 
 
 
