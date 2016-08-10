@@ -35,6 +35,8 @@ typedef struct EBR{
 }EBR;
 
 #define sizeof_MBR sizeof(MBR)
+#define sizeof_EBR sizeof(EBR)
+#define sizeof_PARTITION sizeof(Partition)
 
 void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] ){
 
@@ -48,10 +50,8 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
     int mult = 1024;
 
     if(strcasecmp(unidad,"M")==0){
-        printf("%s Estoy en M\n",unidad);
         mult = mult * 1024;
     }else if(strcasecmp(unidad,"B")==0){
-        printf("%s Esto en B\n",unidad);
         mult = 1;
     }
 
@@ -59,7 +59,7 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
 
     MBR nuevo_mvr;
     nuevo_mvr.mbr_tamano = tamano;
-    nuevo_mvr.mbr_disk_signature = tamano;
+    nuevo_mvr.mbr_disk_signature = rand() % 11;
     printf("El tamaño es: %d\n", tamano);
     nuevo_mvr.mbr_fecha_creacion = time(0);
 
@@ -93,6 +93,53 @@ void rmkdisk(char path[256]){
     }
 }
 
+void fdisk(int size, char unit, char path[256], char type, char fit[2], char delet[4], char name[256], int add){
+    //LECTURA DEL ARCHIVO DE DISCO
+    FILE *archivo_binario;
+    archivo_binario = fopen(path,"rb+");
+    if(archivo_binario != NULL){
+        //LECTURA DEL MBR
+        MBR mbr;
+        fseek(archivo_binario,0,SEEK_SET);
+        fread(&mbr,sizeof_MBR,1,archivo_binario);
+        fclose(archivo_binario);
+
+        int mult = 1024;
+        /*
+        printf("sin problema\n");
+        if(strcasecmp(unit,"K")== 0){
+            mult = 1024;
+        }else if(strcasecmp(unit,"M")==0){
+            mult = mult * 1024;
+        }else if(strcasecmp(unit,"B")==0){
+            mult = 1;
+        }*/
+
+        long tamano = mult; //* size;
+
+
+        strcpy(mbr.mbr_partition_1.part_name,name);
+        mbr.mbr_partition_1.part_size=tamano;
+        mbr.mbr_partition_1.part_fit = fit;
+        mbr.mbr_partition_1.part_type = type;
+        mbr.mbr_partition_1.part_status = 'a';
+        mbr.mbr_partition_1.part_start = 0;
+
+        //mbr.mbr_partition_1 = p;
+
+        archivo_binario = fopen(path,"rb+");
+        fseek(archivo_binario,0,SEEK_SET);
+        fwrite(&mbr , 1 , sizeof_MBR , archivo_binario );
+        fclose(archivo_binario);
+
+        printf("La particion ha sido creada\n");
+
+    }else{
+        printf("No se encuentra el disco buscado\n");
+    }
+
+}
+
 void Lector(){
 
     int activo = 1;
@@ -122,22 +169,16 @@ int main()
     printf("Proyecto Archivos\n");
     CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
 
-    FILE *archivo;
-    archivo = fopen("/home/jerduar/prueba.dsk","rb+");
+    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
 
-    MBR mbr;
-    fseek(archivo,0,SEEK_SET);
-    fread(&mbr,sizeof_MBR,1,archivo);
-    fclose(archivo);
+    MBR r;
+    FILE *file = fopen("/home/jerduar/prueba.dsk","wb+");
+    fseek(file,0,SEEK_SET);
+    fread(&r,sizeof_MBR,1,file);
+    fclose(file);
+    printf("kjlj\n");
+    printf("hhhh%s\n",r.mbr_partition_1.part_name);
 
-    printf("El tamaño del disco es : %ld\n",mbr.mbr_tamano);
-    //rmkdisk("/home/jerduar/prueba.dsk");*/
-/*
-    struct stat st = {0};
-
-if (stat("/home/jerduar/prueba", &st) == -1) {
-    mkdir("/home/jerduar/dfasdf/Archivos", 0700);
-}*/
     return 0;
 
 }
