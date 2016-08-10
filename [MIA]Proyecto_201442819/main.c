@@ -116,17 +116,21 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
         }*/
 
         long tamano = mult; //* size;
+        Partition p;
 
 
-        strcpy(mbr.mbr_partition_1.part_name,name);
-        mbr.mbr_partition_1.part_size=tamano;
-        mbr.mbr_partition_1.part_fit = fit;
-        mbr.mbr_partition_1.part_type = type;
-        strcpy(mbr.mbr_partition_1.part_status,"a");
-    //    printf("status %s\n",mbr.mbr_partition_1.part_status);
-        mbr.mbr_partition_1.part_start = 0;
+        strcpy(p.part_name,name);
+        p.part_size = tamano;
+        p.part_fit = fit;
+        p.part_type = type;
+        p.part_status = 'a';
+        p.part_start = 0;
 
-        //mbr.mbr_partition_1 = p;
+        mbr.mbr_partition_1.part_fit = p.part_fit;
+        mbr.mbr_partition_1.part_size = p.part_size;
+        mbr.mbr_partition_1.part_type = p.part_type;
+        strcpy(mbr.mbr_partition_1.part_name , p.part_name);
+
 
         archivo_binario = fopen(path,"rb+");
         fseek(archivo_binario,0,SEEK_SET);
@@ -141,43 +145,42 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
 
 }
 
+//METODO PARA LEER LA CONSOLA
 void Lector(){
 
-    int activo = 1;
-    char *scanner;
-    char *result;
+    char token[256];
+    char scanner[256] = "";
+    fgets(scanner,256*sizeof(char),stdin);
 
-    while(activo==1){
-        scanf("%s",&scanner);
-        result = strtok(scanner," ");
+    strcpy(token,strtok(scanner," "));
+    printf("%s",token);
 
-        while(result != NULL){
-        //printf("%s\n",result);
-            if(strcasecmp(result,"MKDISK") == 0){
-                //printf("%s\n", result);
-            }
-            result = strtok(NULL," ");
-        }
-
-        printf("%s\n",scanner);
-
+    if(strcasecmp(token,"HOLA") == 0)
+    {
+        printf("jhkhkjh\n");
     }
+
+
 
 }
 
 int main()
 {
-    printf("Proyecto Archivos\n");
-    CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
+//    printf("Proyecto Archivos\n");
+//    CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
+    Lector();
 
-    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
+//    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
 
-    MBR r;
-    FILE *file = fopen("/home/jerduar/prueba.dsk","wb+");
-    fseek(file,0,SEEK_SET);
-    fread(&r,sizeof_MBR,1,file);
-    fclose(file);
-    printf("hhhh %s\n",r.mbr_partition_1.part_status);
+//    MBR r;
+//    FILE *file = fopen("/home/jerduar/prueba.dsk","rb+");
+//    fseek(file,0,SEEK_SET);
+    //fread(&r,sizeof_MBR,1,file);
+
+    //Partition p = r.mbr_partition_1;
+    //fclose(file);
+    //printf("%d\n",r.mbr_tamano);
+    //printf("hhhh %d\n",r.mbr_partition_1.part_size);
 
     return 0;
 
