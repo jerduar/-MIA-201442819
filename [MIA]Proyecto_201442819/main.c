@@ -122,7 +122,8 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
         mbr.mbr_partition_1.part_size=tamano;
         mbr.mbr_partition_1.part_fit = fit;
         mbr.mbr_partition_1.part_type = type;
-        mbr.mbr_partition_1.part_status = 'a';
+        strcpy(mbr.mbr_partition_1.part_status,"a");
+    //    printf("status %s\n",mbr.mbr_partition_1.part_status);
         mbr.mbr_partition_1.part_start = 0;
 
         //mbr.mbr_partition_1 = p;
@@ -176,8 +177,7 @@ int main()
     fseek(file,0,SEEK_SET);
     fread(&r,sizeof_MBR,1,file);
     fclose(file);
-    printf("kjlj\n");
-    printf("hhhh%s\n",r.mbr_partition_1.part_name);
+    printf("hhhh %s\n",r.mbr_partition_1.part_status);
 
     return 0;
 
