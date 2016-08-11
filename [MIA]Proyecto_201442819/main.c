@@ -148,20 +148,142 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
 //METODO PARA LEER LA CONSOLA
 void Lector(){
 
-    char *token=NULL;
+    char *token = NULL;
     char scanner[256];
-    char delimitador[]=" ";
+    char delimitador[] = " ";
+    fflush(stdin);
     fgets(scanner,256,stdin);
 
     token = strtok(scanner,delimitador);
-    printf("%s",token);
 
     while(token != NULL){
-        if(strcasecmp("hola",token) == 0)
+
+        //CASO EN EL QUE SE QUIERA CREAR UN NUEVO DISCO
+        char nombre_param[256];
+        char valor_param[256];
+        int tamano_token_a;
+        int tamano_token_b;
+
+        if(strcasecmp("mkdisk",token) == 0)
         {
-        printf("es igual");
+
+            char unit[50] = "M";
+            char name[100];
+            int size;
+            char path[100];
+
+            memset(unit, '\0', sizeof(unit));
+            memset(name, '\0', sizeof(name));
+            memset(valor_param, '\0', sizeof(valor_param));
+            memset(path, '\0', sizeof(path));
+
+            int bandera_unit = 0;
+            int bandera_size = 0;
+            int bandera_path = 0;
+            int bandera_name = 0;
+            int bandera_error = 0;
+
+            token = strtok(NULL,delimitador);
+
+            while(token != NULL){
+            memset(valor_param,'\0',sizeof(valor_param));
+                tamano_token_a =  strlen(token);
+                strcpy(valor_param,strrchr(token,':'));
+
+                if(valor_param != NULL){
+                    tamano_token_b = strlen(valor_param)-1;
+                    strcpy(valor_param,strrchr(valor_param,':'));
+
+                    for(int i = 0; i < tamano_token_a - tamano_token_b ; i++)
+                    {
+                        nombre_param[i] = token[i];
+                    }
+
+
+                    int tamano_aux = strlen(nombre_param);
+                    printf("%s\n",token);
+
+                    for(int i = 0; i < tamano_token_a ; i++){
+
+                        valor_param[i] = token[i + tamano_aux];
+                    }
+                    char aux[256] = "";
+                    memset(aux,'\0',sizeof(aux));
+                    if(strcasecmp("-path::",nombre_param) == 0 || strcasecmp("-name::",nombre_param) == 0){
+
+
+                    if(valor_param[0] == '"'){
+
+                        if(valor_param[strlen(valor_param)-2] != '"'){
+
+                            strcat(valor_param," ");
+                            strcat(valor_param,token = strtok(NULL,"\""));
+                            strcat(valor_param,"\"");
+                            printf("%s\n",valor_param);
+                        }
+                    }
+
+
+                        for(int i = 0; i < strlen(valor_param) - 2; i++){
+                            aux[i] = valor_param[i + 1];
+                        }
+
+                    }else{
+                        strcpy(aux,valor_param);
+                    }
+
+                    printf("Nombre: %s Valor: %s\n",nombre_param,aux);
+
+                    if(strcasecmp(nombre_param,"-size::")==0){bandera_size = 1;size = atoi(aux);}else if
+                    (strcasecmp(nombre_param,"-name::")==0){bandera_name = 1;strcpy(name,aux);} else if
+                    (strcasecmp(nombre_param,"+unit::")==0){bandera_unit = 1;strcpy(unit,aux);} else if
+                    (strcasecmp(nombre_param,"-path::")==0){bandera_path = 1;strcpy(path,aux);} else
+                    {bandera_error = 1;}
+
+                }
+                else
+                {
+                    printf("PARAMETRO ERRONEO\n");
+                }
+
+                if(token != NULL){token = strtok(NULL,delimitador);}
+
+            }
+            //if(bandera_size == 1 && bandera_name == 1 && bandera_path == 1 && bandera_error == 0){CreacionDisco(size,path,unit,name);}
+
         }
-        token = strtok(NULL,delimitador);
+
+        printf("aca esta el error");
+
+        if(token != NULL){
+             if(strcasecmp("fdisk",token) == 0)
+        {
+
+        }
+
+        else if(strcasecmp("umount",token) == 0)
+        {
+
+        }
+
+        else if(strcasecmp("mount",token) == 0)
+        {
+
+        }
+
+        else if(strcasecmp("rmdisk",token) == 0)
+        {
+
+        }
+
+        else
+        {
+            printf("HAY UN ERROR EN EL COMANDO\n");
+        }
+        }
+
+        if(token != NULL){token = strtok(NULL,delimitador);}
+
     }
 
 
@@ -175,7 +297,12 @@ int main()
 {
 //    printf("Proyecto Archivos\n");
 //    CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
-    Lector();
+    int booleano = 1;
+    printf("------------------------------- ARCHIVOS ------------------------------------\n");
+    while(booleano == 1){
+        printf(">");
+        Lector();
+    }
 
 //    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
 
