@@ -164,10 +164,7 @@ void Lector(){
         int tamano_token_a;
         int tamano_token_b;
 
-        if(strcasecmp("mkdisk",token) == 0)
-        {
-
-            char unit[50] = "M";
+        char unit[50] = "M";
             char name[100];
             int size;
             char path[100];
@@ -183,16 +180,21 @@ void Lector(){
             int bandera_name = 0;
             int bandera_error = 0;
 
+if(strcasecmp(token,"\n")!= 0){
+
+        if(strcasecmp("mkdisk",token) == 0)
+        {
+
             token = strtok(NULL,delimitador);
 
             while(token != NULL){
             memset(valor_param,'\0',sizeof(valor_param));
                 tamano_token_a =  strlen(token);
-                strcpy(valor_param,strrchr(token,':'));
-
+                valor_param[0] = strrchr(token,':');
                 if(valor_param != NULL){
                     tamano_token_b = strlen(valor_param)-1;
-                    strcpy(valor_param,strrchr(valor_param,':'));
+                    valor_param[0] = strrchr(valor_param,':');
+                    //printf("VALORES: %s",valor_param);
 
                     for(int i = 0; i < tamano_token_a - tamano_token_b ; i++)
                     {
@@ -201,44 +203,52 @@ void Lector(){
 
 
                     int tamano_aux = strlen(nombre_param);
-                    printf("%s\n",token);
 
                     for(int i = 0; i < tamano_token_a ; i++){
-
                         valor_param[i] = token[i + tamano_aux];
                     }
+
+                    //printf("%s\n",valor_param);
                     char aux[256] = "";
                     memset(aux,'\0',sizeof(aux));
                     if(strcasecmp("-path::",nombre_param) == 0 || strcasecmp("-name::",nombre_param) == 0){
 
 
                     if(valor_param[0] == '"'){
+                    //printf("EMPIEZA CON COMILLA\n");
+                    //printf("char : %c\n",valor_param[strlen(valor_param)-2]);
 
-                        if(valor_param[strlen(valor_param)-2] != '"'){
+
+                        if(valor_param[strlen(valor_param)-1] != '"' && valor_param[strlen(valor_param)-2] != '"'){
 
                             strcat(valor_param," ");
+                            //printf("El problema esta aca3\n");
                             strcat(valor_param,token = strtok(NULL,"\""));
                             strcat(valor_param,"\"");
-                            printf("%s\n",valor_param);
+                            //printf("Valor: %s\n",valor_param);
+                        }else{
+                            //printf("TERMINA CON COMILLA\n");
                         }
                     }
 
 
-                        for(int i = 0; i < strlen(valor_param) - 2; i++){
+                        for(int i = 0; valor_param[i+1] != '"' && i < strlen(valor_param); i++){
                             aux[i] = valor_param[i + 1];
                         }
+                        //printf("Auxiliar: %s\n",aux);
 
                     }else{
                         strcpy(aux,valor_param);
                     }
 
-                    printf("Nombre: %s Valor: %s\n",nombre_param,aux);
+                    printf("--Nombre: %s Valor: %s\n",nombre_param,aux);
 
                     if(strcasecmp(nombre_param,"-size::")==0){bandera_size = 1;size = atoi(aux);}else if
                     (strcasecmp(nombre_param,"-name::")==0){bandera_name = 1;strcpy(name,aux);} else if
                     (strcasecmp(nombre_param,"+unit::")==0){bandera_unit = 1;strcpy(unit,aux);} else if
                     (strcasecmp(nombre_param,"-path::")==0){bandera_path = 1;strcpy(path,aux);} else
                     {bandera_error = 1;}
+                    //printf("El problema esta aca\n");
 
                 }
                 else
@@ -246,17 +256,17 @@ void Lector(){
                     printf("PARAMETRO ERRONEO\n");
                 }
 
-                if(token != NULL){token = strtok(NULL,delimitador);}
+                if(token == NULL){token = NULL;printf("llego al finalm");}else{token = strtok(NULL,delimitador);}
+                //printf("PROBLEMA!!!!\n");
 
             }
-            //if(bandera_size == 1 && bandera_name == 1 && bandera_path == 1 && bandera_error == 0){CreacionDisco(size,path,unit,name);}
+            if(bandera_size == 1 && bandera_name == 1 && bandera_path == 1 && bandera_error == 0){CreacionDisco(size,path,unit,name);}
+
 
         }
 
-        printf("aca esta el error");
 
-        if(token != NULL){
-             if(strcasecmp("fdisk",token) == 0)
+        else if(strcasecmp("fdisk",token) == 0)
         {
 
         }
@@ -276,20 +286,118 @@ void Lector(){
 
         }
 
+
+
         else
         {
             printf("HAY UN ERROR EN EL COMANDO\n");
         }
+
+        }else{
+
+            printf("ERROR!!!!!!!\n");
         }
 
-        if(token != NULL){token = strtok(NULL,delimitador);}
-
+        if(token == NULL){token = NULL;printf("llego al 2 final");}else{token = strtok(NULL,delimitador);}
     }
 
+}
 
-    //printf("es igual");
+void Lector2(){
+
+    char *token = NULL;
+    char scanner[256];
+    char buffer[256];
+    char delimitador[] = " ";
+    char param_name[256];
+    char param_valor[256];
+
+    memset(buffer,'\0',sizeof(buffer));
+    memset(scanner,'\0',sizeof(scanner));
+
+    fflush(stdin);
+    fgets(scanner,256,stdin);
+
+    strcpy(buffer,scanner);
+
+    token = strtok(scanner,delimitador);
+
+    if(strcasecmp("mkdisk",token) == 0){
+        printf("estoy en mkdisk\n");
+        int contador = strlen("mkdisk");
+        printf("valor : %c\n",buffer[contador]);
+
+        while(contador < strlen(buffer)){
+            memset(param_name,'\0',sizeof(param_name));
+            memset(param_valor,'\0',sizeof(param_valor));
+
+            if(buffer[contador] == ' '){
+                //printf("lei un espacio\n");
+                contador++;
+            }else if(buffer[contador] == '+' || buffer[contador] == '-'){
+                //printf("llegue a un parametro\n");
+                int jj = 0;
+                while( contador < strlen(buffer)){
+                    param_name[jj] = buffer[contador];
+                    //printf("%c\n",buffer[contador]);
+                    if(buffer[contador] == ':'){break;}
+                    contador++;
+                    jj++;
+                }
+
+                contador++;
+                jj++;
+
+                if(contador < strlen(buffer)){
+                    if(buffer[contador] == ':'){param_name[jj] = buffer[contador];/*printf("token reconocido");*/}
+                }else{break;}
+
+                contador++;
+
+                if(strcasecmp("-path::",param_name) == 0 || strcasecmp("-name::",param_name) == 0){
+                    while(contador < strlen(buffer)){
+                        if(buffer[contador] == ' '){
+                            contador++;
+                        }else if(buffer[contador] == '"'){
+
+                            jj = 0;
+                            contador++;
+                            while(contador < strlen(buffer)){
+                                if(buffer[contador] != '"'){
+                                    param_valor[jj] = buffer[contador];
+                                    contador++;
+                                    jj++;
+                                }else{
+                                    break;
+                                }
+                            }
+
+                        }else{
+                            printf("SE ESPERABA CADENA\n");
+                            break;
+                        }
+                    }
+
+                }
+
+                printf("Nombre: %s\n",param_name);
+                printf("Valor: %s\n",param_valor);
 
 
+            }else{
+                printf("ES UN ERROR LEXICO\n");
+                break;
+            }
+
+        }
+
+    }else if(strcasecmp(token,"fdisk") == 0){
+
+
+    }else{
+
+        printf("COMANDO NO RECONOCIDO\n");
+    }
 
 }
 
@@ -300,8 +408,8 @@ int main()
     int booleano = 1;
     printf("------------------------------- ARCHIVOS ------------------------------------\n");
     while(booleano == 1){
-        printf(">");
-        Lector();
+
+        Lector2();
     }
 
 //    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
