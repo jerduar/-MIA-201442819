@@ -57,11 +57,24 @@ void CreacionDisco(int size, char path[256], char unidad[10], char nombre[256] )
 
     long tamano = mult*size;
 
+    Partition p;
+        p.part_status = 'f';
+        p.part_size = 0;
+
     MBR nuevo_mvr;
     nuevo_mvr.mbr_tamano = tamano;
     nuevo_mvr.mbr_disk_signature = rand() % 11;
-    printf("El tamaño es: %ld\n", tamano);
     nuevo_mvr.mbr_fecha_creacion = time(0);
+
+    nuevo_mvr.mbr_partition_1.part_status = p.part_status;
+    nuevo_mvr.mbr_partition_2.part_status = p.part_status;
+    nuevo_mvr.mbr_partition_3.part_status = p.part_status;
+    nuevo_mvr.mbr_partition_4.part_status = p.part_status;
+
+    nuevo_mvr.mbr_partition_1.part_size = p.part_size;
+    nuevo_mvr.mbr_partition_2.part_size = p.part_size;
+    nuevo_mvr.mbr_partition_3.part_size = p.part_size;
+    nuevo_mvr.mbr_partition_4.part_size = p.part_size;
 
 
     archivo_binario = fopen(destino,"wb+");
@@ -105,32 +118,79 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
         fclose(archivo_binario);
 
         int mult = 1024;
-        /*
-        printf("sin problema\n");
-        if(strcasecmp(unit,"K")== 0){
-            mult = 1024;
-        }else if(strcasecmp(unit,"M")==0){
-            mult = mult * 1024;
-        }else if(strcasecmp(unit,"B")==0){
-            mult = 1;
-        }*/
 
-        long tamano = mult; //* size;o
+        if(unit == "K"){
+            mult = 1024;
+        }else if(unit == "M"){
+            mult = mult * 1024;
+        }else if(unit == "B"){
+            mult = 1;
+        }
+
+        int tamano = mult * size; //* size;o
+
         Partition p;
+        Partition aux;
 
 
         strcpy(p.part_name,name);
         p.part_size = tamano;
         p.part_fit = fit;
         p.part_type = type;
-        p.part_status = 'a';
+        p.part_status = 'v';
         p.part_start = 0;
 
-        mbr.mbr_partition_1.part_fit = p.part_fit;
-        mbr.mbr_partition_1.part_size = p.part_size;
-        mbr.mbr_partition_1.part_type = p.part_type;
-        strcpy(mbr.mbr_partition_1.part_name , p.part_name);
+        aux.part_status = mbr.mbr_partition_1.part_status;
+        int tamano_disponible = mbr.mbr_tamano;
+        //printf("tttsss %d\n", mbr.mbr_partition_2.part_size);
+        if(mbr.mbr_partition_1.part_status != "f"){tamano_disponible = tamano_disponible - mbr.mbr_partition_1.part_size;}
+        if(mbr.mbr_partition_2.part_status != "f"){tamano_disponible = tamano_disponible - mbr.mbr_partition_2.part_size;}
+        if(mbr.mbr_partition_3.part_status != "f"){tamano_disponible = tamano_disponible - mbr.mbr_partition_3.part_size;}
+        if(mbr.mbr_partition_4.part_status != "f"){tamano_disponible = tamano_disponible - mbr.mbr_partition_4.part_size;}
 
+        mbr.mbr_partition_1.part_size = p.part_size;
+
+        printf("disponible %d\n",tamano_disponible);
+        printf("tamano : %d\n",tamano);
+        if(tamano <= tamano_disponible && type == 'p'){
+        printf("entre\n");
+            if(mbr.mbr_partition_1.part_status == 'f'){
+                mbr.mbr_partition_1.part_fit = p.part_fit;
+                mbr.mbr_partition_1.part_size = p.part_size;
+                mbr.mbr_partition_1.part_type = p.part_type;
+                mbr.mbr_partition_1.part_status = 'v';
+                strcpy(mbr.mbr_partition_1.part_name , p.part_name);
+                printf("p1\n");
+
+            }else if(mbr.mbr_partition_2.part_status == 'f'){
+                mbr.mbr_partition_2.part_fit = p.part_fit;
+                mbr.mbr_partition_2.part_size = p.part_size;
+                mbr.mbr_partition_2.part_type = p.part_type;
+                mbr.mbr_partition_2.part_status = 'v';
+                strcpy(mbr.mbr_partition_2.part_name , p.part_name);
+                printf("p2\n");
+
+            }else if(mbr.mbr_partition_3.part_status == 'f'){
+                mbr.mbr_partition_3.part_fit = p.part_fit;
+                mbr.mbr_partition_3.part_size = p.part_size;
+                mbr.mbr_partition_3.part_type = p.part_type;
+                mbr.mbr_partition_3.part_status = p.part_status;
+                strcpy(mbr.mbr_partition_3.part_name , p.part_name);
+                printf("p3\n");
+
+            }else if(mbr.mbr_partition_4.part_status == 'f'){
+                mbr.mbr_partition_4.part_fit = p.part_fit;
+                mbr.mbr_partition_4.part_size = p.part_size;
+                mbr.mbr_partition_4.part_type = p.part_type;
+                mbr.mbr_partition_4.part_status = p.part_status;
+                strcpy(mbr.mbr_partition_4.part_name , p.part_name);
+                printf("p4\n");
+            }else{
+                printf("ya no se pueden mas particiones primarias\n");
+            }
+        }else{
+            printf("Ya no hay espacio suficiente\n");
+        }
 
         archivo_binario = fopen(path,"rb+");
         fseek(archivo_binario,0,SEEK_SET);
@@ -141,6 +201,92 @@ void fdisk(int size, char unit, char path[256], char type, char fit[2], char del
 
     }else{
         printf("No se encuentra el disco buscado\n");
+    }
+
+}
+
+void REP(char name[256],char path[256], char id[10], char ruta[256]){
+
+
+    if(strcasecmp(name,"mbr") == 0){
+        char instruccion[500] = "mkdir -p ";
+        strcat(instruccion,path);
+        printf("%s\n",instruccion);
+        system(instruccion);
+
+
+    MBR r;
+    FILE *file = fopen("/home/jerduar/prueba.dsk","rb+");
+    fseek(file,0,SEEK_SET);
+    fread(&r,sizeof_MBR,1,file);
+    fclose(file);
+
+
+    printf("%s\n",path);
+    char aux[256];
+    memset(aux,'\0',256);
+    strcpy(aux,path);
+    printf("%s\n",aux);
+    strcat(aux,"grafo.dot");
+    printf("%s\n",aux);
+
+    FILE *rep = fopen(aux,"wr+");
+
+    int name = r.mbr_disk_signature;
+    int size = r.mbr_tamano;
+    time_t fecha = r.mbr_fecha_creacion;
+
+
+    if(rep != NULL){
+    char grafo[1024] = "graph g {\n";
+    //strcat(grafo,"struct4 [shape=record,label=<<TABLE BORDER=\"2\" CELLBORDER=\"1\" CELLSPACING=\"0\"><TR><TD>Nombre</TD><TD PORT=\"f1\">VALOR</TD></TR>");
+    //strcat(grafo,"<TR><TD>TAMANO</TD><TD>");strcat(grafo,size);strcat(grafo,"</TD></TR></TABLE>>];}");
+
+    fprintf(rep,"graph g { struct4 [shape=record,label=<<TABLE BORDER=\"2\" CELLBORDER=\"1\" CELLSPACING=\"0\"><TR><TD>Nombre</TD><TD PORT=\"f1\">VALOR</TD></TR>");
+    fprintf(rep,"<TR><TD>Disk_signature</TD><TD>%d</TD></TR><TR><TD>Tamaño</TD><TD>%d</TD></TR>",name,size);
+    if(r.mbr_partition_1.part_size != 0){
+
+        fprintf(rep,"<TR><TD>Part_status_1</TD><TD>%d</TD></TR><TR><TD>Part_type_1</TD><TD>%c</TD></TR>",r.mbr_partition_1.part_status,r.mbr_partition_1.part_type);
+        fprintf(rep,"<TR><TD>Part_fit_1</TD><TD>%c</TD></TR><TR><TD>Part_start_1</TD><TD>%d</TD></TR>",r.mbr_partition_1.part_fit,r.mbr_partition_1.part_start);
+        fprintf(rep,"<TR><TD>Part_size_1</TD><TD>%d</TD></TR><TR><TD>Part_name_1</TD><TD>%s</TD></TR>",r.mbr_partition_1.part_size,r.mbr_partition_1.part_name);
+
+
+    }
+
+    if(r.mbr_partition_2.part_size != 0){
+
+        fprintf(rep,"<TR><TD>Part_status_1</TD><TD>%d</TD></TR><TR><TD>Part_type_2</TD><TD>%c</TD></TR>",r.mbr_partition_2.part_status,r.mbr_partition_2.part_type);
+        fprintf(rep,"<TR><TD>Part_fit_1</TD><TD>%c</TD></TR><TR><TD>Part_start_2</TD><TD>%d</TD></TR>",r.mbr_partition_2.part_fit,r.mbr_partition_2.part_start);
+        fprintf(rep,"<TR><TD>Part_size_1</TD><TD>%d</TD></TR><TR><TD>Part_name_2</TD><TD>%s</TD></TR>",r.mbr_partition_2.part_size,r.mbr_partition_2.part_name);
+
+
+    }
+
+    if(r.mbr_partition_3.part_size != 0){
+
+        fprintf(rep,"<TR><TD>Part_status_3</TD><TD>%d</TD></TR><TR><TD>Part_type_3</TD><TD>%c</TD></TR>",r.mbr_partition_3.part_status,r.mbr_partition_3.part_type);
+        fprintf(rep,"<TR><TD>Part_fit_3</TD><TD>%c</TD></TR><TR><TD>Part_start_3</TD><TD>%d</TD></TR>",r.mbr_partition_3.part_fit,r.mbr_partition_3.part_start);
+        fprintf(rep,"<TR><TD>Part_size_3</TD><TD>%d</TD></TR><TR><TD>Part_name_3</TD><TD>%s</TD></TR>",r.mbr_partition_3.part_size,r.mbr_partition_3.part_name);
+
+
+    }
+
+    if(r.mbr_partition_4.part_size != 0){
+
+        fprintf(rep,"<TR><TD>Part_status_4</TD><TD>%d</TD></TR><TR><TD>Part_type_4</TD><TD>%c</TD></TR>",r.mbr_partition_4.part_status,r.mbr_partition_4.part_type);
+        fprintf(rep,"<TR><TD>Part_fit_4</TD><TD>%c</TD></TR><TR><TD>Part_start_4</TD><TD>%d</TD></TR>",r.mbr_partition_4.part_fit,r.mbr_partition_4.part_start);
+        fprintf(rep,"<TR><TD>Part_size_4</TD><TD>%d</TD></TR><TR><TD>Part_name_4</TD><TD>%s</TD></TR>",r.mbr_partition_4.part_size,r.mbr_partition_4.part_name);
+
+
+    }
+
+
+    fprintf(rep,"</TABLE>>];}");
+    fclose(rep);
+    //fwrite(grafo,1,sizeof(grafo),rep);
+
+    }
+
     }
 
 }
@@ -404,25 +550,26 @@ void Lector2(){
 int main()
 {
 //    printf("Proyecto Archivos\n");
-//    CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
-    int booleano = 1;
+    //CreacionDisco(1,"/home/jerduar/","M","prueba.dsk");
+    /*int booleano = 1;
     printf("------------------------------- ARCHIVOS ------------------------------------\n");
     while(booleano == 1){
 
         Lector2();
-    }
+    }*/
 
-//    fdisk(2,"K","/home/jerduar/prueba.dsk","M","pru","fsds","nombre",12);
+    //fdisk(2,"K","/home/jerduar/prueba.dsk",'p',"pru","fsds","nombre",12);
 
-//    MBR r;
-//    FILE *file = fopen("/home/jerduar/prueba.dsk","rb+");
-//    fseek(file,0,SEEK_SET);
-    //fread(&r,sizeof_MBR,1,file);
+    MBR r;
+    FILE *file = fopen("/home/jerduar/prueba.dsk","rb+");
+    //printf("tamano mbr: %d\n",sizeof_MBR);
+    fseek(file,0,SEEK_SET);
+    fread(&r,sizeof_MBR,1,file);
 
-    //Partition p = r.mbr_partition_1;
-    //fclose(file);
-    //printf("%d\n",r.mbr_tamano);
-    //printf("hhhh %d\n",r.mbr_partition_1.part_size);
+    Partition p = r.mbr_partition_1;
+    fclose(file);
+    printf("%c\n",p.part_type);
+    REP("mbr","/home/jerduar/archi/","3e","fasdfsdf");
 
     return 0;
 
